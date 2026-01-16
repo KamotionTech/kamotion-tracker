@@ -18,58 +18,79 @@ class KamotionApp extends StatelessWidget {
   }
 }
 
-class WorkoutTemplatesScreen extends StatelessWidget {
+class WorkoutTemplatesScreen extends StatefulWidget {
   const WorkoutTemplatesScreen({super.key});
+
+  @override
+  State<WorkoutTemplatesScreen> createState() => _WorkoutTemplatesScreenState();
+}
+
+class _WorkoutTemplatesScreenState extends State<WorkoutTemplatesScreen> {
+  final List<String> templates = ['Push', 'Pull', 'Legs'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Workout Templates')),
-      body: ListView(
-        children: [
-          ListTile(
-            title: const Text('Push'),
+      body: ListView.builder(
+        itemCount: templates.length,
+        itemBuilder: (context, index) {
+          final name = templates[index];
+
+          return ListTile(
+            title: Text(name),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      const WorkoutScreen(workoutName: 'Push'),
+                  builder: (context) => WorkoutScreen(workoutName: name),
                 ),
               );
             },
-          ),
-          ListTile(
-            title: const Text('Pull'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const WorkoutScreen(workoutName: 'Pull'),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            title: const Text('Legs'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const WorkoutScreen(workoutName: 'Legs'),
-                ),
-              );
-            },
-          ),
-        ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          final controller = TextEditingController();
+
+          final newName = await showDialog<String>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('New template'),
+                content: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Upper, Pull (Volume), Full Body',
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      final value = controller.text.trim();
+                      if (value.isEmpty) return;
+                      Navigator.pop(context, value);
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (newName == null) return;
+
+          setState(() {
+            templates.add(newName);
+          });
+        },
         child: const Icon(Icons.add),
       ),
     );
