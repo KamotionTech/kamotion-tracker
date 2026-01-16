@@ -97,20 +97,70 @@ class _WorkoutTemplatesScreenState extends State<WorkoutTemplatesScreen> {
   }
 }
 
-class WorkoutScreen extends StatelessWidget {
+class WorkoutScreen extends StatefulWidget {
   final String workoutName;
 
   const WorkoutScreen({super.key, required this.workoutName});
 
   @override
+  State<WorkoutScreen> createState() => _WorkoutScreenState();
+}
+
+class _WorkoutScreenState extends State<WorkoutScreen> {
+  final List<String> exercises = [];
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(workoutName)),
-      body: Center(
-        child: Text(
-          '$workoutName Workout',
-          style: const TextStyle(fontSize: 24),
-        ),
+      appBar: AppBar(title: Text(widget.workoutName)),
+      body: ListView.builder(
+        itemCount: exercises.length,
+        itemBuilder: (context, index) {
+          final exerciseName = exercises[index];
+          return ListTile(title: Text(exerciseName));
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final controller = TextEditingController();
+
+          final newExercise = await showDialog<String>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('New Exercise'),
+                content: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Bench Press',
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      final value = controller.text.trim();
+                      if (value.isEmpty) return;
+                      Navigator.pop(context, value);
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (newExercise == null) return;
+
+          setState(() {
+            exercises.add(newExercise);
+          });
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
